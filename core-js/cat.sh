@@ -8,6 +8,7 @@ cat \
     Char.js\
     Graphics/Color.js\
     Graphics/Collage.js\
+    Graphics/Scene.js\
     Graphics/Element.js\
     Text.js\
     Graphics/Render.js\

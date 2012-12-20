@@ -2,7 +2,7 @@
 var Render = function(){
 
 function newElement(elementType) {
-    var e = document.createElement(elementType);    
+    var e = document.createElement(elementType);
     e.style.padding = "0";
     e.style.margin = "0";
     return e;
@@ -157,6 +157,7 @@ function render(elem) {
     case "EFittedImage": e = fittedImage(elem[3],elem[4],elem[2][1]); break;
     case "EFlow":        e = flow(elem[2][1][0],elem[2][2]); break;
     case "ECollage":     e = Collage.collage(elem[2][1],elem[2][2],elem[2][3]); break;
+    case "EScene":       e = Scene.scene(elem[2][1],elem[2][2],elem[2][3]); break;
     case "EEmpty":       e = newElement('div'); break;
     case "EContainer":   e = container(elem[2][1],elem[2][2]); break;
     case "EHtml":
@@ -214,6 +215,12 @@ function update(node,curr,next) {
 	    return node.parentNode.replaceChild(render(next),node);
 	}
 	Collage.updateCollage(node,currE[3],nextE[3]);
+	break;
+    case "EScene":
+	if (nextE[1] !== currE[1] || nextE[2] !== currE[2] || nextE[3].length !== currE[3].length) {
+	    return node.parentNode.replaceChild(render(next),node);
+	}
+	Scene.updateScene(node,currE[3],nextE[3]);
 	break;
     case "EFlow":
 	if (nextE[1] !== currE[1]) {
@@ -274,4 +281,4 @@ function update(node,curr,next) {
 
 return {render:render,update:update,addTo:addTo,newElement:newElement,flowWith:flowWith,goIn:goIn};
 
-}(); 
+}();
