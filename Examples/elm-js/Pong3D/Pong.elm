@@ -286,7 +286,7 @@ scoreBoard w inPlay p1 p2 =
 display (w,h) (GameState state (Score p1 p2) (Ball pos _) (Paddle y1) (Paddle y2)) =
   layers
     [ let pongGreen = rgb 60 100 60 in
-      container w h middle $ scene gameWidth gameHeight []
+      container w h middle $ scene gameWidth gameHeight pongGreen []
 {-        [ filled pongGreen (rect gameWidth gameHeight (halfWidth,halfHeight))
         , filled white (oval 15 15 pos)                    -- ball
         , filled white (rect 10 40 (            20, y1))   -- first paddle

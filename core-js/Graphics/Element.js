@@ -75,7 +75,9 @@ Elm.Graphics = function() {
   function EScene(a1) {
     return function(a2) {
       return function(a3) {
-	  return["EScene", a1, a2, Value.groupForms(a3)]
+	return function(a4) {
+	  return["EScene", a1, a2, a3, Value.groupForms(a4)]
+	}
       }
     }
   }
@@ -356,7 +358,9 @@ Elm.Graphics = function() {
   function scene(a1) {
     return function(a2) {
       return function(a3) {
-	  return basicNewElement(EScene(a1)(a2)(a3),a1,a2)
+	return function(a4) {
+	  return basicNewElement(EScene(a1)(a2)(a3)(a4),a1,a2)
+	}
       }
     }
   }
