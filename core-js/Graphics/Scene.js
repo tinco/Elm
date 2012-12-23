@@ -27,18 +27,22 @@ function renderScene(redo,gl,w,h,color,models) {
     gl.viewportWidth = w;
     gl.viewportHeight = h;
     color = toFloatColor(color);
+    // Initialize the background color of the viewport
     gl.clearColor(color[1], color[2], color[3], color[4]);
+    // I think this makes sure that rendered models correctly overlap
     gl.enable(gl.DEPTH_TEST);
 
-    var buffers = initBuffers(gl,models);
-    var shaders = initShaders(gl,models);
-    drawScene(redo,gl,w,h,color,shaders,models);
+    initBuffers(gl,models);
+    var shaderProgram = initShaderProgram(gl);
+    drawScene(redo,gl,w,h,color,shaderProgram,models);
 }
 
-function initShaders(gl,models) {
+function initShaderProgram(gl) {
     var fragmentShader = initializeFragmentShader(gl);
     var vertexShader = initializeVertexShader(gl);
     
+    // A shaderProgram is a piece of compiled code that
+    // is uploaded and ran on the graphics card.
     var shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
@@ -58,6 +62,7 @@ function initShaders(gl,models) {
     shaderProgram.pMatrix = mat4.create();
     shaderProgram.mvMatrix = mat4.create();
     shaderProgram.setMatrixUniforms = function() {
+        // Uploads the pMatrix and mvMatrix to the graphics card.
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, shaderProgram.pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, shaderProgram.mvMatrix);
     }
@@ -67,6 +72,10 @@ function initShaders(gl,models) {
 }
 
 function initializeFragmentShader(gl) {
+    // The fragment shader gets applied to 'fragments'
+    // I don't yet understand what these are, but they
+    // in this case they represent the faces of the 
+    // polygons. gl_FragColor determines their color.
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmentShader, "precision mediump float;void main(void) {gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);}");
     gl.compileShader(fragmentShader);
@@ -77,6 +86,12 @@ function initializeFragmentShader(gl) {
 }
 
 function initializeVertexShader(gl) {
+    // As I understand it the vertex shader is applied
+    // to each vertex, it has a vertexPosition, it multiplies
+    // this vertex with the uPMatrix which represents the
+    // position and orientation of the camera, and with
+    // the uMVMatrix, which has the translation and rotation
+    // for this particular vertex. 
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, "attribute vec3 aVertexPosition;uniform mat4 uMVMatrix;uniform mat4 uPMatrix;void main(void) {gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);}");
     gl.compileShader(vertexShader);
@@ -90,9 +105,12 @@ function initBuffers(gl,models) {
     var buffers = []
     for(var m in models) {
         var buf = buffers[m] = gl.createBuffer();
+        // Select the buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         var vertices = models[m][1];
+        // Upload the vertices to the graphics card
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        // Vertices consist of 3 coordinate values ( X, Y, Z )
         buf.itemSize = 3;
         buf.numItems = vertices.length / buf.itemSize;
         models[m].buffer = buf;
@@ -113,12 +131,14 @@ function drawScene(redo,gl,w,h,color,shaderProgram,models) {
         mat4.identity(shaderProgram.mvMatrix);
         // Do any translations
         mat4.translate(shaderProgram.mvMatrix, [-1.5, 0.0, -7.0]);
-        gl.bindBuffer(gl.ARRAY_BUFFER,models[m].buffer);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-                               models[m].buffer.itemSize, gl.FLOAT, false, 0, 0);
         // Upload our translation to the graphics card 
         shaderProgram.setMatrixUniforms();
-        // Draw this model
+        // Select the active buffer on the graphics card
+        gl.bindBuffer(gl.ARRAY_BUFFER,models[m].buffer);
+        // Select the vertex position attribute
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+                               models[m].buffer.itemSize, gl.FLOAT, false, 0, 0);
+        // Draw the model
         gl.drawArrays(gl.TRIANGLES, 0, models[m].buffer.numItems);
     }
 }
@@ -129,6 +149,7 @@ function toFloatColor(color) {
 
 function scene(w,h,color,models) {
     if (models.length === 0) { return sceneModels(w,h,color,[["Model", [
+         // An example triangle:
          0.0,  1.0,  0.0,
         -1.0, -1.0,  0.0,
          1.0, -1.0,  0.0
